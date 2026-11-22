@@ -1,19 +1,22 @@
 #include "main.h"
 #define _USE_MATH_DEFINES 
 // #include "lemlib/api.hpp"
-
-pros::MotorGroup left_mg({1, 10}, pros::MotorGearset::green);    // Creates a motor group with forwards ports 1 & 3 and reversed port 2
-pros::MotorGroup right_mg({-11, -20}, pros::MotorGearset::green);
+pros::Controller robbie(pros::E_CONTROLLER_MASTER); 
+pros::MotorGroup left_mg({-10, 9}, pros::MotorGearset::green);    // Creates a motor group with forwards ports 1 & 3 and reversed port 2
+pros::MotorGroup right_mg({1, -2}, pros::MotorGearset::green);
+pros::ADIDigitalOut claw('G'); // Create a pneumatic in port A
+pros::MotorGroup lift({-8, 7}, pros::MotorGearset::green);
+// bool isSkillsRun = false;
 
 Drivetrain drivetrain(
     &left_mg, // left motor group
     &right_mg, // right motor group
-    12.0, // track width (12 inches)
+    11.5, // track width (12 inches)
     Omniwheel::NEW_275, // using new 4" omnis
-    200, // drivetrain rpm
+    220, // drivetrain rpm
     2); // horizontal drift (2 is standard for normal drive)
 
-Imu imu(_); 
+Imu imu(20); 
 OdomSensors sensors(nullptr, // vertical tracking wheel 1
                     nullptr, // vertical tracking wheel 2
                     nullptr, // horizontal tracking wheel 1
@@ -59,7 +62,7 @@ void initialize() {
 	pros::lcd::set_text(1, "Hello PROS User!");
 
 	pros::lcd::register_btn1_cb(on_center_button);
-	// chassis.calibrate();
+	chassis.calibrate();
 }
 
 /**
@@ -167,17 +170,90 @@ void competition_initialize() {}
 // }
 
 void autonomous() {
-    chassis.setPose(0, 0, 0);
-    chassis.moveToPoint(24,0,10000);
+    // chassis.setPose(-0.1, 62.5, 180);
+    // chassis.moveToPoint(0, 12.6, 4950/.);
+    pros::lcd::set_text(1, "Auton Started");
+    
+    chassis.setPose(-62.5, -11.4, 132);
+    chassis.moveToPoint(-52.5, -20.3, 1850);
+    chassis.waitUntilDone();
+    claw.set_value(false);
+    
+    // clamp.set_value
+    
 
+    
+    // 	
+    //   right_mg.move_velocity(-100);
+    //   left_mg.move_velocity(-100);
+    //   pros::delay(500);
+    //   right_mg.move_velocity(100);
+    //   left_mg.move_velocity(100);
+    // 	pros::delay(500);
+    // 	right_mg.move_velocity(-100);
+    //   left_mg.move_velocity(-100);
+}
+
+// Routine: Red Left
+
+// chassis.setPose(-62.5, -9, 135);
+// chassis.moveToPoint(-51.6, -20.4, 2100, {.maxSpeed = 70});
+// chassis.moveToPoint(-60.5, -10.9, 1700, {.forwards = false});
+// chassis.turnToPoint(-47.7, 30, 1250);
+// chassis.moveToPoint(-10.1, 13.1, 5450);
+
+    // chassis.setPose(-62.5, -6.6, 90);
+    // chassis.moveToPoint(0.2, -11.5, 6050);
+
+    // chassis.setPose(-62.5, 0, -90);
+    // chassis.moveToPoint(-57.7, 0, 1100, {.forwards = false, .minSpeed = 100});
+    // chassis.moveToPoint(-63.4, 0, 1100);
+    // chassis.moveToPoint(-46.3, 0, 2050, {.forwards = false});
+    // chassis.turnToHeading(179, 1100);
+    // chassis.moveToPoint(-47.7, -16, 2050); 
+    // chassis.setPose(0, 0, 0);
+    // chassis.moveToPoint(24,0,10000);
+    // chassis.turnToHeading(-90,5000);
+    // chassis.moveToPoint(24,10,10000);
+
+    // bool isRedAlliance = true; // Red alliance match side
+    //  // Autonomous skills challenge mode
+    // bool distanceClear = true; // Distance sensor > 10 inches clear
+
+// // Routine: Red Left
+// if (isSkillsRun){
+//     chassis.setPose(-62.5, -0.06, -90);
+//     chassis.moveToPoint(-55, 0, 1350, {.forwards = false, .minSpeed = 100});
+//     chassis.moveToPoint(-62.5, 0, 1250, {.minSpeed = 100});
+//     chassis.moveToPoint(-47, 0, 1900, {.forwards = false, .minSpeed = 80});
+//     chassis.turnToHeading(-181, 1100, {.minSpeed = 100});
+//     chassis.moveToPoint(-48.2, -15.6, 2050);
+//     chassis.moveToPoint(-48.2, -8.8, 1200, {.forwards = false});
+//     chassis.turnToHeading(88, 1100, {.minSpeed = 114});
+//     chassis.moveToPoint(-35, -10, 1850, {.minSpeed = 100});
+//     chassis.turnToHeading(181, 1100, {.minSpeed = 100});
+//     chassis.moveToPoint(-35, -61, 5050);
+//     chassis.turnToHeading(-90, 1100, {.minSpeed = 100});
+//     chassis.moveToPoint(-66.3, -60.1, 3350);
+//     chassis.moveToPoint(-53.3, -59.7, 1700, {.forwards = false});
+//     chassis.turnToHeading(-20, 1000);
+//     chassis.moveToPoint(-50.6, -31.7, 3100, {.minSpeed = 80});
+//     chassis.moveToPoint(-53.1, -61.8, 3200, {.forwards = false});
+//     chassis.turnToHeading(-91, 1100);
+//     chassis.moveToPoint(-66, -60.6, 1800);
+//     }else{
+
+
+
+  
 	// drive_inches(24, 200,3000);
     // pros::delay(200);
 	// turn_degrees(90, 200, 6000);
     // drive_inches(5,100,3000);
     // drive_inches(-)
-}
 
-/**
+
+/**7l
  * Runs the operator control code. This function will be started in its own task
  * with the default priority and stack size whenever the robot is enabled via
  * the Field Management System or the VEX Competition Switch in the operator
@@ -191,40 +267,107 @@ void autonomous() {
  * task, not resume it from where it left off.
  */
  void opcontrol() {
-	pros::Controller master(pros::E_CONTROLLER_MASTER);  // Creates a motor group with forwards port 5 and reversed ports 4 & 6
-	pros::MotorGroup left_mg({1, 10}, pros::MotorGearset::green);    // Creates a motor group with forwards ports 1 & 3 and reversed port 2
-	pros::MotorGroup right_mg({-11, -20}, pros::MotorGearset::green);
+	 // Creates a motor group with forwards port 5 and reversed ports 4 & 6
+	// pros::MotorGroup left_mg({1, 10}, pros::MotorGearset::green);    // Creates a motor group with forwards ports 1 & 3 and reversed port 2
+	// pros::MotorGroup right_mg({-11, -20}, pros::MotorGearset::green);
 
-
-	while (true) {
-		pros::lcd::print(0, "%d %d %d", (pros::lcd::read_buttons() & LCD_BTN_LEFT) >> 2,
-		                 (pros::lcd::read_buttons() & LCD_BTN_CENTER) >> 1,
-		                 (pros::lcd::read_buttons() & LCD_BTN_RIGHT) >> 0); 
-
-        int leftY = controller.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_Y);
-        int rightX = controller.get_analog(pros::E_CONTROLLER_ANALOG_RIGHT_X);
-
-        // move the robot
+    while (true) {
+        //arcade drive
+        int leftY = robbie.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_Y);
+        int rightX = robbie.get_analog(pros::E_CONTROLLER_ANALOG_RIGHT_X);
+        lift.set_brake_mode(pros::E_MOTOR_BRAKE_HOLD);
         chassis.arcade(leftY, rightX);
-
-        // Left joystick Y-axis controls forward/backward (Linear)
-        // int power = master.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_Y);
         
-        // // Right joystick X-axis controls left/right (Turning)
-        // int turn = master.get_analog(pros::E_CONTROLLER_ANALOG_RIGHT_X);
+        //tank drive
+        // int leftY = robbie.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_Y);
+        // int rightY = robbie.get_analog(pros::E_CONTROLLER_ANALOG_RIGHT_Y);
 
-        // // Split Arcade Math
-        // int left_side_power = power - turn;
-        // int right_side_power = power + turn;
+        // chassis.tank(leftY, rightY);
+        // CLAW CONTROLS
+        if (robbie.get_digital(pros::E_CONTROLLER_DIGITAL_L1)) {
+            claw.set_value(true);
+            robbie.set_text(0, 0, "L1 PRESSED");
+        }
+        else if (robbie.get_digital(pros::E_CONTROLLER_DIGITAL_L2)) {
+            claw.set_value(false);
+            robbie.set_text(0, 0, "L2 PRESSED");
+        }
+        // LIFT CONTROLS
+        if (robbie.get_digital(pros::E_CONTROLLER_DIGITAL_R1)) {
+            lift.move(70);
+        }
+        else if (robbie.get_digital(pros::E_CONTROLLER_DIGITAL_R2)) {
+            lift.move(-70);
+        }
+        else {
+            lift.brake();
+        }
 
-        // // Send voltages/power to the motors
-        // left_mg.move(left_side_power);
-        // right_mg.move(right_side_power);
+        
 
-		if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_A)) {
-			autonomous();
-		}
-        // Prevent CPU hogging (20ms refresh rate matches the controller data rate)
         pros::delay(20);
     }
 }
+//     int leftY = robbie.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_Y);
+    //     int rightX = robbie.get_analog(pros::E_CONTROLLER_ANALOG_RIGHT_X);
+
+    //     // move the robot
+    //     chassis.arcade(leftY, rightX);
+
+    //     if (robbie.get_digital(pros::E_CONTROLLER_DIGITAL_R1)) {
+	// 		lift.move(127);
+	// 		robbie.set_text(0, 0, "R1 PRESSED");
+	// 	}
+	// 	else if (robbie.get_digital(pros::E_CONTROLLER_DIGITAL_R2)) {
+	// 		lift.move(-127);
+	// 		robbie.set_text(0, 0, "R2 PRESSED");
+	// 	}
+	// 	else {
+	// 		lift.move(0);
+	// 	}
+    //     if (robbie.get_digital(pros::E_CONTROLLER_DIGITAL_L1)) {
+	// 		claw.set_value(true);   // Open claw
+	// 		robbie.set_text(0, 0, "L1 PRESSED");
+	// 	}
+	// 	else if (robbie.get_digital(pros::E_CONTROLLER_DIGITAL_L2)) {
+	// 		claw.set_value(false);  // Close claw
+	// 		robbie.set_text(0, 0, "L2 PRESSED");
+	// 	}
+    //     // Left joystick Y-axis controls forward/backward (Linear)
+    //     // int power = master.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_Y);
+        
+    //     // // Right joystick X-axis controls left/right (Turning)
+    //     // int turn = master.get_analog(pros::E_CONTROLLER_ANALOG_RIGHT_X);
+
+    //     // // Split Arcade Math
+    //     // int left_side_power = power - turn;
+    //     // int right_side_power = power + turn;
+
+    //     // // Send voltages/power to the motors
+    //     // left_mg.move(left_side_power);
+    //     // right_mg.move(right_side_power);
+
+		
+    //     // if (robbie.get_digital(pros::E_CONTROLLER_DIGITAL_R1)){
+    //     //     lift.move(200);
+    //     // }else if (pros::E_CONTROLLER_DIGITAL_R2){
+    //     //     lift.move(-200);
+    //     // }else{
+    //     //     lift.move(0);
+    //     // }
+    //     // bool isSkillsRun = false;
+    //     if (robbie.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_B)) {
+    //         isSkillsRun = true;
+    //         autonomous();
+    //     }
+        
+    //     if (robbie.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_A)) {
+    //         isSkillsRun = false;
+    //         autonomous();
+    //     }
+    //     // if(robbie.get_digital_new_press)
+    //     // claw_pneumatic.set_value(true); // Extend
+    //     // claw_pneumatic.set_value(false); // Retract
+    //     // Prevent CPU hogging (20ms refresh rate matches the controller data rate)
+    //     pros::delay(20);
+    // }
